@@ -5,7 +5,9 @@ var UserController = require('../controllers/user');
 
 var api = express.Router();
 
-api.get('/probando-controlador', UserController.pruebas);
+var md_auth = require('../middlewares/autenticated');
+
+api.get('/probando-controlador', md_auth.ensureAuth ,UserController.pruebas);
 api.post('/register', UserController.saveUser);
 api.post('/login', UserController.loginUser);
 

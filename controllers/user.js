@@ -71,7 +71,7 @@ function loginUser(req, res){
 	var email = params.email;
 	var password = params.password;
 
-	User.findOne({email: email.toLowerCase()}, (err, user) =>{
+	User.findOne({email: email.toLowerCase()}, function(err, user){
 		if(err){
 			res.status(500).send({
 				message: 'Error en la petición'
@@ -83,7 +83,7 @@ function loginUser(req, res){
 				});
 			} else {
 				// Comprobar la contraseña
-				bcrypt.compare(password, user.password, (err, check)=>{
+				bcrypt.compare(password, user.password, function(err, check){
 					if(check){
 						// devolver los datos del usuario logueado
 						if(params.gethash){
@@ -107,8 +107,35 @@ function loginUser(req, res){
 	});
 }
 
+
+function updateUser(req, res){
+	// Se saca el Id del usuario desde el URL
+	var userId = req.params.id;
+	// El body que viene de la peticion
+	var update = req.body;
+
+	User.findByIdAndUpdate(userId, update, function(err, userUpdated){
+		if(err){
+            res.status(500).send({
+                message: 'Error al actualizar el usuario'
+            });
+		} else {
+			if(userUpdated){
+                res.status(404).send({
+                    message: 'No se a podido actualizar el usuario'
+                });
+			} else {
+                res.status(200).send({
+                    user: userUpdated
+                });
+			}
+		}
+	});
+}
+
 module.exports = {
 	pruebas: pruebas,
 	saveUser: saveUser,
-	loginUser: loginUser
+	loginUser: loginUser,
+	updateUser: updateUser
 };

@@ -1,0 +1,9 @@
+
+Usuario y contraseña curso Angular Mean
+user: ditoaforero@hotmail.com
+password: qwerty
+
+
+Cuando se recoge la informaciòn desde el body se utiliza: req.body siendo req el parametro que se recibe en la funcion, cuando se desea recibir desde la url se utiliza req.params.nombrevariable
+
+Un parametro que viene en la ruta url es opcional cuando se adjunta el signo de interrogacion '?'

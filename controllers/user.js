@@ -3,6 +3,11 @@ var bcrypt = require('bcrypt-nodejs');
 var User = require('../models/user');
 var jwt = require('../services/jwt');
 
+// Para trabajar con los ficheros del sistema
+var fs = require('fs');
+var path = require('path');
+//
+
 function pruebas(req, res){
 	res.status(200).send({
 		message: 'Probando una accion del controlador de Usuarios del API Rest con NodeJS y Mongo'
@@ -43,7 +48,7 @@ function saveUser(req, res){
 								res.status(404).send({
 									message: "No se ha registrado el usuario"
 								});			
-							}else {
+							}else {surname
 								res.status(200).send({
 									user: userStored
 								});			
@@ -65,6 +70,7 @@ function saveUser(req, res){
 
 
 }
+
 
 function loginUser(req, res){
 	var params = req.body;
@@ -120,7 +126,7 @@ function updateUser(req, res){
                 message: 'Error al actualizar el usuario'
             });
 		} else {
-			if(userUpdated){
+			if(!userUpdated){
                 res.status(404).send({
                     message: 'No se a podido actualizar el usuario'
                 });
@@ -133,9 +139,66 @@ function updateUser(req, res){
 	});
 }
 
+function uploadImage(req, res) {
+	console.log('Llego a cargar imagen');
+	var userId = req.params.id;
+	var file_name ='No subido...';
+
+	if(req.files){
+		var file_path = req.files.image.path;
+		// Para separar las palabras
+		var file_split = file_path.split('/');
+		// Toma la tercera posicion
+		var file_name = file_split[2];
+
+		var ext_split = file_name.split('.');
+		var file_ext = ext_split[1];
+
+		if(file_ext=='png' || file_ext=='jpg' || file_ext=='gif'){
+            // Se actualiza la imagen
+			User.findByIdAndUpdate(userId, {
+                image: file_name
+            }, function (err, userUpdated) {
+
+            })
+        } else {
+			// Si el tipo de extension de la imagen no corresponde a una imagen
+            res.status(200).send({
+                message: 'Extension de imagen incorrecta'
+            });
+        }
+		console.log(file_ext);
+	} else {
+		res.status(200).send({
+			message: 'No se ha subido ningun mensaje'
+		});
+	}
+}
+
+
+function getImageFile(req, res){
+	console.log('Llego a getImageFile');
+	var imageFile = req.params.imageFile;
+	var path_file = './uploads/users/'+imageFile;
+	console.log(path_file);
+	fs.exists(path_file, function(exists){
+		if(exists){
+			res.sendFile(path.resolve(path_file));
+		} else {
+            res.status(200).send({
+                message: 'No existe la imagen...'
+            });
+		}
+	})
+}
+
+
 module.exports = {
 	pruebas: pruebas,
 	saveUser: saveUser,
 	loginUser: loginUser,
-	updateUser: updateUser
+	updateUser: updateUser,
+	uploadImage: uploadImage,
+	getImageFile: getImageFile
+
 };

@@ -175,10 +175,80 @@ function deleteAlbum(req, res){
 }
 
 
+function uploadImage(req, res) {
+    console.log('Llego a uploadImage de Album');
+    var albumId = req.params.id;
+    var file_name = 'No subido...';
+
+
+    console.log(req.files);
+
+    if(req.files){
+        var file_path = req.files.image.path;
+        // Para separar las palabras
+        var file_split = file_path.split('/');
+        // Toma la tercera posicion
+        var file_name = file_split[2];
+
+        var ext_split = file_name.split('.');
+        var file_ext = ext_split[1];
+
+        if(file_ext=='png' || file_ext=='jpg' || file_ext=='gif'){
+            // Se actualiza la imagen
+            Album.findByIdAndUpdate(albumId, {image: file_name}, function (err, albumUpdated) {
+                if(err){
+                    res.status(500).send({
+                        message: 'Error al actualizar la imagen del album'
+                    });
+                } else {
+                    if(!albumUpdated){
+                        res.status(404).send({
+                            message: 'El artista no ha sido actualizado'
+                        });
+                    } else {
+                        res.status(200).send({
+                            album: albumUpdated
+                        });
+                    }
+                }
+            })
+        } else {
+            // Si el tipo de extension de la imagen no corresponde a una imagen
+            res.status(200).send({
+                message: 'Extension de imagen incorrecta'
+            });
+        }
+        console.log(file_ext);
+    } else {
+        res.status(200).send({
+            message: 'No se ha subido ninguna imagen'
+        });
+    }
+
+}
+
+function getImageFile(req, res){
+    var imageFile = req.params.imageFile;
+    var path_file = './uploads/albums/'+imageFile;
+    console.log(path_file);
+    fs.exists(path_file, function(exists){
+        if(exists){
+            res.sendFile(path.resolve(path_file));
+        } else {
+            res.status(200).send({
+                message: 'No existe la imagen...'
+            });
+        }
+    })
+}
+
 module.exports = {
     getAlbum : getAlbum,
     getAlbums: getAlbums,
     saveAlbum: saveAlbum,
     updateAlbum: updateAlbum,
-    deleteAlbum: deleteAlbum
+    deleteAlbum: deleteAlbum,
+    uploadImage: uploadImage,
+    getImageFile: getImageFile
+
 }

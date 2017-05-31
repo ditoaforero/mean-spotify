@@ -14,6 +14,9 @@ var md_upload = multipart({
 })
 
 api.get('/song/:id', md_auth.ensureAuth, SongController.getSong);
+api.get('/songs/:id?', md_auth.ensureAuth, SongController.getSongs);
 api.post('/song', md_auth.ensureAuth, SongController.saveSong);
+api.put('/song/:id', md_auth.ensureAuth, SongController.updateSong);
+api.delete('/song/:id', md_auth.ensureAuth, SongController.deleteSong);
 
 module.exports = api;

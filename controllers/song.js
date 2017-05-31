@@ -38,6 +38,84 @@ function getSong(req, res) {
 
 }
 
+function getSongs(req, res){
+    console.log('Llego a getSongs');
+
+
+
+    var albumId = req.params.id;
+
+
+    /*var page = 1;
+    if(req.params.page){
+        page = req.params.page;
+    }
+
+    var itemPerPage = 3;
+    */
+
+    if(!albumId){
+        var find = Song.find({}).sort('name');
+    } else{
+        var find = Song.find({
+            album: albumId
+        }).sort('number');
+    }
+
+    find.populate({path: 'album'}).exec(function(err, songs){
+        if(err){
+            res.status(500).send({
+                message: 'Error en la petición'
+            });
+        }else {
+            if(!songs){
+                res.status(404).send({
+                    message: 'No existen canciones'
+                });
+            } else {
+                res.status(200).send({
+                    songs: songs
+                });
+            }
+        }
+    })
+
+}
+
+function getArtists(req, res){
+
+    if(req.params.page){
+        var page = req.params.page;
+    } else {
+        var page = 1;
+    }
+
+    var itemPerPage = 3;
+
+    Artist.find().sort('name').paginate(page, itemPerPage, function (err, artists, total) {
+        if(err){
+            res.status(500).send({
+                message: 'Error en la petición'
+            });
+        } else {
+            if(!artists){
+                res.status(400).send({
+                    messsage: 'No hay artistas'
+                });
+            } else {
+                return res.status(200).send({
+                    total_registos: total,
+                    numero_pagina: page,
+                    artists: artists
+                });
+            }
+        }
+    })
+
+}
+
+
+
 function saveSong(req, res) {
     console.log('Llego a saveSong');
     var song = new Song();
@@ -68,7 +146,67 @@ function saveSong(req, res) {
     })
 }
 
+function updateSong(req, res){
+    console.log('Llego a updateSong');
+
+    var songId = req.params.id;
+    var update = req.body;
+
+    console.log(update);
+
+    Song.findByIdAndUpdate(songId, update, function (err, songUpdated) {
+        if(err){
+            res.status(500).send({
+                message: 'Error en el servidor'
+            });
+        } else {
+            if(!songUpdated){
+                res.status(404).send({
+                    message: 'No se ha actualizado la canción'
+                });
+            }else{
+                res.status(200).send({
+                    song: songUpdated
+                });
+            }
+        }
+    })
+}
+
+
+
+function deleteSong(req, res){
+    console.log('Llego a deleteSong');
+
+    var songId = req.params.id;
+    Song.findByIdAndRemove(songId, function(err, songRemoved){
+        if(err){
+            res.status(500).send({
+                message: 'Error en el servidor'
+            });
+        } else {
+            if(!songRemoved){
+                res.status(404).send({
+                    message: 'La canción no ha sido eliminado'
+                });
+            } else {
+                res.status(200).send({
+                    song: songRemoved
+                });
+            }
+        }
+    })
+
+}
+
+
+
+
+
 module.exports = {
     getSong: getSong,
-    saveSong: saveSong
+    getSongs: getSongs,
+    saveSong: saveSong,
+    updateSong: updateSong,
+    deleteSong: deleteSong
 }

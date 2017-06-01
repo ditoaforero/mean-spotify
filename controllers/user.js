@@ -156,18 +156,31 @@ function uploadImage(req, res) {
 
 		if(file_ext=='png' || file_ext=='jpg' || file_ext=='gif'){
             // Se actualiza la imagen
-			User.findByIdAndUpdate(userId, {
-                image: file_name
-            }, function (err, userUpdated) {
+			User.findByIdAndUpdate(userId, { image: file_name}, function (err, userUpdated) {
+				if(err){
+                    res.status(500).send({
+                        message: 'Error en el servidor'
+                    });
+				} else {
+					if(!userUpdated){
+                        res.status(404).send({
+                            message: 'No se ha podido actualizar el usuario'
+                        });
+					} else {
+                        res.status(200).send({
+                            image: file_name,
+                        	user: userUpdated
+                        });
+					}
+				}
 
-            })
+            });
         } else {
 			// Si el tipo de extension de la imagen no corresponde a una imagen
             res.status(200).send({
                 message: 'Extension de imagen incorrecta'
             });
         }
-		console.log(file_ext);
 	} else {
 		res.status(200).send({
 			message: 'No se ha subido ningun mensaje'

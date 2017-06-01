@@ -46,23 +46,15 @@ function getSongs(req, res){
     var albumId = req.params.id;
 
 
-    /*var page = 1;
-    if(req.params.page){
-        page = req.params.page;
-    }
-
-    var itemPerPage = 3;
-    */
-
     if(!albumId){
-        var find = Song.find({}).sort('name');
+        var find = Song.find({}).sort('number');
     } else{
         var find = Song.find({
             album: albumId
         }).sort('number');
     }
 
-    find.populate({path: 'album'}).exec(function(err, songs){
+    find.populate({path: 'album', populate:{path: 'artist'}}).exec(function(err, songs){
         if(err){
             res.status(500).send({
                 message: 'Error en la petición'
@@ -152,7 +144,6 @@ function updateSong(req, res){
     var songId = req.params.id;
     var update = req.body;
 
-    console.log(update);
 
     Song.findByIdAndUpdate(songId, update, function (err, songUpdated) {
         if(err){
@@ -200,6 +191,74 @@ function deleteSong(req, res){
 }
 
 
+function uploadFile(req, res) {
+
+    console.log('Llego a uploadFile de Song');
+    var songId = req.params.id;
+    var file_name = 'No subido...';
+
+
+    console.log(req.files);
+
+    if(req.files){
+        var file_path = req.files.file.path;
+        // Para separar las palabras
+        var file_split = file_path.split('/');
+        // Toma la tercera posicion
+        var file_name = file_split[2];
+
+        var ext_split = file_name.split('.');
+        var file_ext = ext_split[1];
+
+        if(file_ext=='mp3' || file_ext=='ogg'){
+            // Se actualiza la imagen
+            Song.findByIdAndUpdate(songId, {file: file_name}, function (err, songUpdated) {
+                if(err){
+                    res.status(500).send({
+                        message: 'Error al actualizar la canción'
+                    });
+                } else {
+                    if(!songUpdated){
+                        res.status(404).send({
+                            message: 'La cancion no se ha actualizado'
+                        });
+                    } else {
+                        res.status(200).send({
+                            song: songUpdated
+                        });
+                    }
+                }
+            })
+        } else {
+            // Si el tipo de extension de la imagen no corresponde a una imagen
+            res.status(200).send({
+                message: 'Extension de canción incorrecta'
+            });
+        }
+        console.log(file_ext);
+    } else {
+        res.status(200).send({
+            message: 'No se ha subido ninguna canción'
+        });
+    }
+
+}
+
+function getSongFile(req, res){
+    var songFile = req.params.songFile;
+    var path_file = './uploads/songs/'+songFile;
+    console.log(path_file);
+    fs.exists(path_file, function(exists){
+        if(exists){
+            res.sendFile(path.resolve(path_file));
+        } else {
+            res.status(200).send({
+                message: 'No existe la canción...'
+            });
+        }
+    })
+}
+
 
 
 
@@ -208,5 +267,7 @@ module.exports = {
     getSongs: getSongs,
     saveSong: saveSong,
     updateSong: updateSong,
-    deleteSong: deleteSong
+    deleteSong: deleteSong,
+    uploadFile: uploadFile,
+    getSongFile: getSongFile
 }

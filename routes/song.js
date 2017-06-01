@@ -19,4 +19,8 @@ api.post('/song', md_auth.ensureAuth, SongController.saveSong);
 api.put('/song/:id', md_auth.ensureAuth, SongController.updateSong);
 api.delete('/song/:id', md_auth.ensureAuth, SongController.deleteSong);
 
+// Carga de archivos de audio
+api.post('/upload-file-song/:id', [md_auth.ensureAuth,md_upload], SongController.uploadFile);
+api.get('/get-song-file/:songFile', SongController.getSongFile);
+
 module.exports = api;
